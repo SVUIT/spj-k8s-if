@@ -10,6 +10,7 @@ data "google_container_engine_versions" "central1c" {
 
 resource "google_service_account" "default" {
   account_id   = "gke-svuit"
+  display_name = "GKE_SVUIT_SA"
   create_ignore_already_exists = true
 }
 

@@ -4,7 +4,6 @@
 #   https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html
 ---
 myvar: this-is-the-variable
----
 nginx_port: 80
 server_name: example.com
 ssl_enabled: true

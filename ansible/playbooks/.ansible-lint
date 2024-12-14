@@ -1,0 +1,9 @@
+# References:
+#   https://github.com/ansible/ansible-lint
+
+skip_list:
+  - empty-string-compare
+  - fqcn-builtins
+  - yaml[trailing-spaces]
+  - yaml[new-line-at-end-of-file]
+  - internal-error

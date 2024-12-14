@@ -1,6 +1,16 @@
-# This file includes some variables
+# This file includes some variables used in playbook
 #
 # References:
 #   https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html
 ---
-myvar: something
+myvar: this-is-the-variable
+---
+nginx_port: 80
+server_name: example.com
+ssl_enabled: true
+ssl_certificate: /etc/nginx/ssl/example.crt
+ssl_certificate_key: /etc/nginx/ssl/example.key
+backend_server: backend-app
+backend_port: 8080
+enable_logging: true
+log_dir: /var/log/nginx

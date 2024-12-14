@@ -1,11 +1,11 @@
 ---
-- name: Nginx playbook
+- name: Example playbook
   hosts: localhost
   gather_facts: false
   
   vars_files:
     - "{{ playbook_dir }}/../example/group_vars/general-vars.yml"
-    - "{{ playbook_dir }}/../example/group_vars/examplevault"
+    - "{{ playbook_dir }}/../example/group_vars/example-vault"
 
   tasks:
     - name: Show variable
@@ -16,10 +16,10 @@
       ansible.builtin.debug:
         msg: "mysecret: {{ mysecret }}"
 
-    - name: Find GCLI
+    - name: Check gcloud version
       ansible.builtin.command: gcloud --version
       register: gcloud_version
-      changed_when: gcloud_version == 0
+      changed_when: false
 
     - name: Print gcloud version
       ansible.builtin.debug:

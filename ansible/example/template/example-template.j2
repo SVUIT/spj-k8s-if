@@ -1,0 +1,31 @@
+# This is Jinja (j2) template used in playbook.
+# This J2 template is using variables in groups_vars/general-vars.yml
+#
+# References:
+#   https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_templating.html
+---
+server {
+    listen {{ nginx_port }};
+    server_name {{ server_name }};
+
+    {% if ssl_enabled %}
+    ssl_certificate     {{ ssl_certificate }};
+    ssl_certificate_key {{ ssl_certificate_key }};
+    {% else %}
+    # SSL is disabled
+    {% endif %}
+
+    location / {
+        proxy_pass http://{{ backend_server }}:{{ backend_port }};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    {% if enable_logging %}
+    access_log {{ log_dir }}/access.log;
+    error_log  {{ log_dir }}/error.log;
+    {% else %}
+    access_log off;
+    error_log  off;
+    {% endif %}
+}

@@ -1,0 +1,64 @@
+---
+- name: Nginx ingres playbook
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    gcp_sa_temp_file: "{{ playbook_dir }}/../nginx-ingress/keys/gcp-sa.json"
+  
+  vars_files:
+    - "{{ playbook_dir }}/../nginx-ingress/group_vars/general-vars.yml"
+    - "{{ playbook_dir }}/../nginx-ingress/group_vars/gke-vault"
+
+  tasks:
+    - name: Write GCP SA credentials to a temporary file
+      copy:
+        content: "{{ gke_cred }}"  # Use the decrypted value directly
+        dest: "{{ gcp_sa_temp_file }}"
+        mode: '0600'  # Restrict file permissions for security
+
+    - name: List all GCP service accounts
+      ansible.builtin.command: 
+        gcloud auth list
+      changed_when: false
+
+    - name: Login to GCP
+      ansible.builtin.command: 
+        gcloud auth login --no-browser \
+                          --cred-file={{ gcp_sa_temp_file }}
+      changed_when: false
+
+    - name: Access GKE cluster
+      ansible.builtin.command: 
+        gcloud container clusters get-credentials {{ gke_sa }} \
+                                  --zone {{ gke_zone }} \
+                                  --project {{ gke_project }}
+      changed_when: false
+
+    - name: Get Kubernetes namespaces
+      ansible.builtin.command: kubectl get ns
+      changed_when: false
+
+    - name: Check if nginx-ingress namespaces exist
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Namespace
+        name: "{{ nginx_namespace }}"
+      register: nginx_ns
+
+    - name: Create nginx-ingress namespaces
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        name: "{{ nginx_namespace }}"
+        state: present
+      when: nginx_ns.resources | length == 0
+
+    - name: Logout from GCP
+      ansible.builtin.command: gcloud auth revoke --all
+      changed_when: false
+
+    - name: Clean up temporary GCP SA credentials file
+      ansible.builtin.file:
+        path: "{{ gcp_sa_temp_file }}"
+        state: absent

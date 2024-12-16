@@ -2,7 +2,7 @@
 #   https://registry.terraform.io/providers/hashicorp/google/latest
 
 provider "google" {
-    project = "magnetic-blade-436316-f5"
-    region = "us-central1"
-    credentials = "gke-svuit.json"
+    project = var.gke_project
+    region = var.gke_region
+    credentials = var.gke_credential
 }

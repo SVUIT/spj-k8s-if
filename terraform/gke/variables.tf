@@ -11,6 +11,11 @@ variable "gke_project" {
   default = "magnetic-blade-436316-f5"
 }
 
+variable "gke_sa" {
+  description = "GKE service account"
+  default = "gke-svuit-sa"
+}
+
 variable "gke_region" {
   description = "GKE region"
   default = "us-central1"
@@ -38,7 +43,7 @@ variable "node_type" {
 
 variable "node_count" {
   description = "GKE node count" 
-  default = 1
+  default = 2
 }
 
 variable "node_size" {

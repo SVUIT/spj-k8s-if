@@ -9,9 +9,9 @@ data "google_container_engine_versions" "central1c" {
 }
 
 resource "google_service_account" "default" {
-  account_id   = var.gke_name
+  account_id   = var.gke_sa
   display_name = var.gke_display_name
-  create_ignore_already_exists = true
+  create_ignore_already_exists = false
 }
 
 resource "google_container_cluster" "primary" {
@@ -20,6 +20,7 @@ resource "google_container_cluster" "primary" {
   min_master_version = data.google_container_engine_versions.central1c.release_channel_default_version["REGULAR"]
   node_version       = data.google_container_engine_versions.central1c.release_channel_default_version["REGULAR"]
   initial_node_count = var.node_count
+
   node_config {
     preemptible  = true
     machine_type = var.node_type

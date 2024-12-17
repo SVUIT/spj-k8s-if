@@ -16,15 +16,16 @@ resource "google_service_account" "default" {
 
 resource "google_container_cluster" "primary" {
   name               = var.gke_name
-  location           = data.google_container_engine_versions.central1c.location 
+  location           = data.google_container_engine_versions.central1c.location
   min_master_version = data.google_container_engine_versions.central1c.release_channel_default_version["REGULAR"]
   node_version       = data.google_container_engine_versions.central1c.release_channel_default_version["REGULAR"]
-  initial_node_count = var.node_count
-
+  deletion_protection = false
+  initial_node_count = 1
   node_config {
-    preemptible  = true
-    machine_type = var.node_type
-    disk_size_gb = var.node_size
+    machine_type  = var.node_type
+    disk_size_gb  = var.node_size
+    disk_type = var.disk_type
+    preemptible   = true
     service_account = google_service_account.default.email
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
@@ -32,19 +33,26 @@ resource "google_container_cluster" "primary" {
   }
 }
 
-# resource "google_container_node_pool" "primary_preemptible_nodes" {
-#   name       = "default-node-pool"
+# resource "google_container_node_pool" "default_pool" {
+#   name       = "default-pool"
 #   cluster    = google_container_cluster.primary.name
-#   node_count = 1
-#   location   = data.google_container_engine_versions.central1c.location 
+#   location   = var.gke_zone 
+#   initial_node_count = 1
+#   autoscaling {
+#     min_node_count = 1
+#     max_node_count = 1
+#   }
 
 #   node_config {
-#     preemptible  = true
-#     machine_type = "e2-medium"
-#     disk_size_gb = 40
-#     service_account = google_service_account.default.id
+#     machine_type  = var.node_type
+#     disk_size_gb  = var.node_size
+#     disk_type = var.disk_type
+#     preemptible   = true
+#     service_account = google_service_account.default.email
 #     oauth_scopes = [
 #       "https://www.googleapis.com/auth/cloud-platform"
 #     ]
 #   }
+
+#   version = data.google_container_engine_versions.central1c.release_channel_default_version["REGULAR"]
 # }

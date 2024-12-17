@@ -50,3 +50,18 @@ variable "node_size" {
   description = "GKE node size" 
   default = 40
 }
+
+variable "disk_type" {
+  description = "Disk type for the GKE nodes"
+  default     = "pd-standard"
+}
+
+variable "min_nodes" {
+  description = "Minimum number of nodes for autoscaling"
+  default     = 1
+}
+
+variable "max_nodes" {
+  description = "Maximum number of nodes for autoscaling"
+  default     = 1
+}

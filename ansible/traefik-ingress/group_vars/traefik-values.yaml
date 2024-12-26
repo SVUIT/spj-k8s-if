@@ -1,0 +1,7 @@
+# References:
+#   https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml
+---
+providers:  # @schema additionalProperties: false
+  kubernetesCRD:
+    # -- Allows IngressRoute to reference resources in namespace other than theirs
+    allowCrossNamespace: true

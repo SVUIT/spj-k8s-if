@@ -1,0 +1,158 @@
+---
+- name: Traefik ingress playbook
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    gcp_sa_temp_file: "{{ playbook_dir }}/../traefik-ingress/keys/gcp-sa.json"
+    traefik_deployment_template: "{{ playbook_dir }}/../traefik-ingress/template/traefik-deployment.j2"
+    traefik_deployment_file: "{{ playbook_dir }}/../traefik-ingress/tmp/traefik-deployment.yaml"
+    traefik_service_template: "{{ playbook_dir }}/../traefik-ingress/template/traefik-svc.j2"
+    traefik_service_file: "{{ playbook_dir }}/../traefik-ingress/tmp/traefik-svc.yaml"
+    # traefik_helm_values: "{{ playbook_dir }}/../traefik-ingress/group_vars/traefik-values.yaml"
+  
+  vars_files:
+    - "{{ playbook_dir }}/../traefik-ingress/group_vars/general-vars.yml"
+    - "{{ playbook_dir }}/../traefik-ingress/group_vars/gke-vault"
+
+  tasks:
+
+  # ---Traefik Deployment---
+    - name: Create Traefik namespace
+      kubernetes.core.k8s:
+        kind: Namespace
+        name: "{{ traefik_namespace }}"
+        state: present
+
+    - name: Copy Traefik deployment template
+      ansible.builtin.template:
+        src: "{{ traefik_deployment_template }}"
+        dest: "{{ traefik_deployment_file }}"
+        mode: "0600"
+      
+    - name: Deploy Traefik deployment
+      kubernetes.core.k8s:
+        src: "{{ traefik_deployment_file }}"
+        state: present
+
+    - name: Clean up
+      ansible.builtin.file:
+        path: "{{ traefik_service_file }}"
+        state: absent
+
+# ---Traefik Service---
+    - name: Copy Traefik service template
+      ansible.builtin.template:
+        src: "{{ traefik_service_template }}"
+        dest: "{{ traefik_service_file }}"
+        mode: "0600"
+    
+    # - name: Create Traefik namespace
+    #   kubernetes.core.k8s:
+    #     kind: Namespace
+    #     name: "{{ traefik_namespace }}"
+    #     state: present
+      
+    - name: Deploy Traefik service
+      kubernetes.core.k8s:
+        src: "{{ traefik_service_file }}"
+        state: present
+
+    - name: Clean up
+      ansible.builtin.file:
+        path: "{{ traefik_service_file }}"
+        state: absent
+
+# ---Traefik Helm---
+    # - name: Add {{ traefik_helm_name }} helm repo
+    #   kubernetes.core.helm_repository:
+    #     repo_url: "{{ traefik_helm_url }}"
+    #     repo_name: "{{ traefik_helm_name }}"
+    #     state: present
+
+    # - name: Install {{ traefik_helm_name }} to cluster
+    #   kubernetes.core.helm:
+    #     release_name: "{{ traefik_helm_name }}"
+    #     release_namespace: "{{ traefik_namespace }}"
+    #     values_files: "{{ traefik_helm_values }}"
+    #     create_namespace: true
+    #     chart_ref: "{{ traefik_chart_ref }}"
+    #     state: absent
+
+# ---Traefik Service Account---
+    # - name: List all GCP service accounts
+    #   ansible.builtin.command: 
+    #     gcloud auth list
+    #   changed_when: false
+
+    # - name: Write GCP SA credentials to a temporary file
+    #   copy:
+    #     content: "{{ gke_cred }}"  # Use the decrypted value directly
+    #     dest: "{{ gcp_sa_temp_file }}"
+    #     mode: '0600'  # Restrict file permissions for security
+
+    # - name: Login to GCP
+    #   ansible.builtin.command: 
+    #     gcloud auth login --no-browser \
+    #                       --cred-file={{ gcp_sa_temp_file }}
+    #   changed_when: false
+
+    # - name: Access GKE cluster
+    #   ansible.builtin.command: 
+    #     gcloud container clusters get-credentials {{ gke_cluster }} \
+    #                               --zone {{ gke_zone }} \
+    #                               --project {{ gke_project }}
+    #   changed_when: false
+
+    # - name: Get Kubernetes namespaces
+    #   ansible.builtin.command: kubectl get ns
+    #   changed_when: false
+
+    # - name: Check if {{ traefik_namespace }} namespaces exist
+    #   kubernetes.core.k8s_info:
+    #     api_version: v1
+    #     kind: Namespace
+    #     name: "{{ traefik_namespace }}"
+    #   register: traefik_ns
+
+    # - name: Create {{ traefik_namespace }} namespaces
+    #   kubernetes.core.k8s:
+    #     api_version: v1
+    #     kind: Namespace
+    #     name: "{{ traefik_namespace }}"
+    #     state: present
+    #   when: traefik_ns.resources | length == 0
+
+    # - name: Copy {{ traefik_sa_template }} to tmp
+    #   ansible.builtin.template:
+    #     src: "{{ traefik_sa_template }}"
+    #     dest: "{{ traefik_sa_file }}"
+    #     mode: "0600"
+
+    # - name: Check if {{ traefik_sa }} service accounts exist
+    #   kubernetes.core.k8s_info:
+    #     api_version: v1
+    #     kind: ServiceAccount
+    #     name: "{{ traefik_sa }}"
+    #     namespace: "{{ traefik_namespace }}"
+    #   register: traefik_sa_present
+
+    # - name: Apply {{ traefik_sa }} service account from yaml
+    #   kubernetes.core.k8s:
+    #     src: "{{ traefik_sa_file }}"
+    #     state: absent
+      # when: traefik_sa_present.resources | length == 0
+
+    # - name: Logout from GCP
+    #   ansible.builtin.command: gcloud auth revoke --all
+    #   changed_when: false 
+
+    # - name: Clean up temporary GCP SA credentials file
+    #   ansible.builtin.file:
+    #     path: "{{ gcp_sa_temp_file }}"
+    #     state: absent
+    
+    # - name: Clean up {{ traefik_sa_file }}
+    #   ansible.builtin.file:
+    #     path: "{{ traefik_sa_file }}"
+    #     state: absent

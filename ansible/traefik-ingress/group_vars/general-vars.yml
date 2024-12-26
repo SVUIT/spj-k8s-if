@@ -1,0 +1,6 @@
+---
+traefik_helm_name: traefik
+traefik_helm_url: https://traefik.github.io/charts
+traefik_namespace: traefik
+traefik_chart_ref: traefik/traefik
+traefik_replicas: 1

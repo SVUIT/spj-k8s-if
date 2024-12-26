@@ -7,3 +7,4 @@ skip_list:
   - yaml[trailing-spaces]
   - yaml[new-line-at-end-of-file]
   - internal-error
+  - name[template]
